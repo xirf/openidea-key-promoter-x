@@ -1,0 +1,130 @@
+id = "xirf.key-promoter-x"
+name = "Key Promoter X"
+version = "0.1.0"
+description = "Shows the keyboard shortcut when you use the mouse, tracks missed shortcuts vs. keyboard hits in a tool window, and suggests creating shortcuts for frequent actions. Ported from halirutan's IntelliJ Key Promoter X."
+authors = ["xirf", "Patrick Scheibe (original Key Promoter X)", "Dmitry Kashin", "Athiele"]
+homepage = "https://github.com/xirf/openidea-key-promoter-x"
+license = "BSD-3-Clause"
+change-notes = "0.1.0 — Initial OpenIDEA port of IntelliJ Key Promoter X: shortcut tips with interactive notification actions, Missed Shortcuts & Suppressed tool window, keyboard hit tracking, missing-shortcut suggestions, snooze, hard mode, status bar menu, and configurable settings."
+categories = ["tools"]
+icon = "icons/icon.svg"
+icon-dark = "icons/icon_dark.svg"
+engines.openidea = "^1.14"
+wasm = "dist/plugin.wasm"
+activation = [
+  "on-event:action-performed",
+  "on-event:settings-changed",
+  "on-view:hitlist",
+  "on-view:suppressed",
+  "on-command:*",
+]
+
+[capabilities]
+required = ["events.input", "storage"]
+
+[contributes.settings]
+schema = "settings.schema.json"
+
+[[contributes.views]]
+id = "hitlist"
+title = "Key Promoter X"
+icon = "icons/kpx-toolwindow.svg"
+location = "right"
+group = "key-promoter-x"
+
+[[contributes.views]]
+id = "suppressed"
+title = "Suppressed"
+location = "right"
+group = "key-promoter-x"
+
+[[contributes.statusBar]]
+id = "status"
+text = "KPX"
+tooltip = "Key Promoter X — Click for quick actions"
+command = "open-hitlist"
+align = "right"
+priority = 200
+
+[[contributes.commands]]
+id = "open-hitlist"
+title = "Key Promoter X: Show Missed Shortcuts"
+category = "Key Promoter X"
+
+[[contributes.commands]]
+id = "open-suppressed"
+title = "Key Promoter X: Show Suppressed Shortcuts"
+category = "Key Promoter X"
+
+[[contributes.commands]]
+id = "toggle-snooze"
+title = "Key Promoter X: Toggle Snooze Notifications"
+category = "Key Promoter X"
+
+[[contributes.commands]]
+id = "suppress"
+title = "Key Promoter X: Suppress Shortcut"
+category = "Key Promoter X"
+
+[[contributes.commands]]
+id = "suppress-hitlist-row"
+title = "Suppress Shortcut"
+category = "Key Promoter X"
+
+[[contributes.commands]]
+id = "unsuppress"
+title = "Key Promoter X: Unsuppress Shortcut"
+category = "Key Promoter X"
+
+[[contributes.commands]]
+id = "unsuppress-all"
+title = "Key Promoter X: Unsuppress All Shortcuts"
+category = "Key Promoter X"
+
+[[contributes.commands]]
+id = "suppress-last"
+title = "Key Promoter X: Suppress Last Action"
+category = "Key Promoter X"
+
+[[contributes.commands]]
+id = "statistics"
+title = "Key Promoter X: Show Statistics Summary"
+category = "Key Promoter X"
+
+[[contributes.commands]]
+id = "reset"
+title = "Key Promoter X: Reset Statistics"
+category = "Key Promoter X"
+
+[[contributes.commands]]
+id = "about"
+title = "Key Promoter X: About & Credits"
+category = "Key Promoter X"
+
+[[contributes.commands]]
+id = "open-upstream"
+title = "Key Promoter X: Open Original Key Promoter X on GitHub"
+category = "Key Promoter X"
+
+[[contributes.menus]]
+menu = "tools"
+command = "open-hitlist"
+
+[[contributes.menus]]
+menu = "tools"
+command = "toggle-snooze"
+
+[[contributes.menus]]
+menu = "tools"
+command = "reset"
+
+[[contributes.menus]]
+menu = "viewItem.context"
+view = "hitlist"
+command = "suppress-hitlist-row"
+
+[[contributes.menus]]
+menu = "viewItem.context"
+view = "suppressed"
+command = "unsuppress"
+when = "viewItemKind == suppressed"

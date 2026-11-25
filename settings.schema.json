@@ -1,0 +1,60 @@
+{
+  "properties": {
+    "showTipsClickCount": {
+      "type": "integer",
+      "title": "Clicks before notification is shown",
+      "description": "Show a notification every Nth mouse click on an action that has a keyboard shortcut (1 = every click).",
+      "group": "General",
+      "default": 1
+    },
+    "proposeToCreateShortcutCount": {
+      "type": "integer",
+      "title": "Invocations before suggesting a new shortcut (0 = never)",
+      "description": "Suggest creating a shortcut after clicking an action without a shortcut N times. Set to 0 to disable.",
+      "group": "General",
+      "default": 3
+    },
+    "hardMode": {
+      "type": "boolean",
+      "title": "Enable Hard Mode",
+      "description": "Show a blocking confirmation dialog instead of a non-intrusive notification balloon when a shortcut is missed.",
+      "group": "General",
+      "default": false
+    },
+    "menusEnabled": {
+      "type": "boolean",
+      "title": "Menu Actions",
+      "description": "Show shortcut tips when invoking actions from the main menu.",
+      "group": "Enabled for",
+      "default": true
+    },
+    "toolbarButtonsEnabled": {
+      "type": "boolean",
+      "title": "Toolbar Buttons",
+      "description": "Show shortcut tips when clicking toolbar buttons.",
+      "group": "Enabled for",
+      "default": true
+    },
+    "contextMenuEnabled": {
+      "type": "boolean",
+      "title": "Popup / Context Menu Items",
+      "description": "Show shortcut tips when invoking actions from right-click context menus.",
+      "group": "Enabled for",
+      "default": true
+    },
+    "searchEnabled": {
+      "type": "boolean",
+      "title": "Search Everywhere / Find Action",
+      "description": "Show shortcut tips when running actions from Search Everywhere or Find Action.",
+      "group": "Enabled for",
+      "default": true
+    },
+    "otherButtonsEnabled": {
+      "type": "boolean",
+      "title": "Tool Window & Other Buttons",
+      "description": "Show shortcut tips for other UI triggers such as tool window buttons.",
+      "group": "Enabled for",
+      "default": true
+    }
+  }
+}
