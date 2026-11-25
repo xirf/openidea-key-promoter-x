@@ -39,6 +39,20 @@ enum PendingTip {
     },
 }
 
+/// IDE actions dispatched automatically/programmatically by OpenIDEA with `ActionSource::Other`
+/// (e.g., disk sync on window focus runs `project.refresh` and `vcs.refresh`; internal editor
+/// hints run `editor.showHint`). Explicit invocations from Menu/Toolbar/ContextMenu/Search are
+/// still tracked normally.
+const AUTOMATIC_OTHER_ACTIONS: &[&str] = &[
+    "project.refresh",
+    "vcs.refresh",
+    "editor.showHint",
+];
+
+fn is_automatic_other_action(action_id: &str, source: ActionSource) -> bool {
+    source == ActionSource::Other && AUTOMATIC_OTHER_ACTIONS.contains(&action_id)
+}
+
 impl Plugin for KeyPromoterX {
     fn activate(&mut self, _ctx: &Context) -> Result<(), Error> {
         if let Err(err) = host::subscribe(EventKind::ActionPerformed)
@@ -83,6 +97,9 @@ impl Plugin for KeyPromoterX {
                     if !settings.is_source_enabled(action.source) {
                         continue;
                     }
+                    if is_automatic_other_action(&action.action, action.source) {
+                        continue;
+                    }
 
                     let title = if action.title.trim().is_empty() {
                         action.action.as_str()
@@ -104,7 +121,7 @@ impl Plugin for KeyPromoterX {
                         if entry.missed % settings.show_tips_click_count == 0 {
                             pending_tip = Some(PendingTip::Missed(entry));
                         }
-                    } else {
+                    } else if action.source != ActionSource::Other {
                         let Ok(count) = store.record_no_shortcut(&action.action) else {
                             return;
                         };
@@ -726,5 +743,72 @@ mod tests {
             plugin.run_command("statistics", &ctx, None).unwrap_err(),
             Error::Denied("storage".into())
         );
+    }
+
+    #[test]
+    fn automatic_other_actions_are_ignored_with_or_without_shortcut() {
+        let host = MockHost::install();
+        let ctx = host.invocation();
+        let mut plugin = KeyPromoterX::default();
+
+        for _ in 0..6 {
+            plugin.handle_events(
+                &[
+                    action("project.refresh", "Reload Project Tree from Disk", ActionSource::Other, None),
+                    action("vcs.refresh", "Refresh VCS Status", ActionSource::Other, None),
+                    action("editor.showHint", "Show Hint", ActionSource::Other, None),
+                ],
+                &ctx,
+            );
+        }
+        plugin.handle_events(
+            &[
+                action(
+                    "project.refresh",
+                    "Reload Project Tree from Disk",
+                    ActionSource::Other,
+                    Some("Cmd+Alt+Y"),
+                ),
+                action("vcs.refresh", "Refresh VCS Status", ActionSource::Other, Some("Cmd+Alt+Y")),
+            ],
+            &ctx,
+        );
+
+        assert!(host.notifications_with_actions().is_empty());
+        let store = Store::load().unwrap();
+        assert!(store.stats.is_empty());
+        assert!(store.no_shortcut_counts.is_empty());
+
+        let menu_refresh = action("project.refresh", "Reload Project Tree from Disk", ActionSource::Menu, None);
+        plugin.handle_events(&[menu_refresh.clone(), menu_refresh.clone(), menu_refresh], &ctx);
+
+        let notes = host.notifications_with_actions();
+        assert_eq!(notes.len(), 1);
+        assert!(notes[0].notification.body.contains("Reload Project Tree from Disk"));
+    }
+
+    #[test]
+    fn unmapped_other_source_actions_do_not_suggest_creating_shortcut() {
+        let host = MockHost::install();
+        let ctx = host.invocation();
+        let mut plugin = KeyPromoterX::default();
+
+        for _ in 0..6 {
+            plugin.handle_events(
+                &[action("window.selectTab", "Select Tab", ActionSource::Other, None)],
+                &ctx,
+            );
+        }
+        assert!(host.notifications_with_actions().is_empty());
+        assert!(Store::load().unwrap().no_shortcut_counts.is_empty());
+
+        plugin.handle_events(
+            &[action("run.reload", "Reload", ActionSource::Other, Some("Cmd+R"))],
+            &ctx,
+        );
+        let notes = host.notifications_with_actions();
+        assert_eq!(notes.len(), 1);
+        assert_eq!(notes[0].notification.title, "Reload (Cmd+R)");
+        assert_eq!(Store::load().unwrap().stats["run.reload"].missed, 1);
     }
 }
